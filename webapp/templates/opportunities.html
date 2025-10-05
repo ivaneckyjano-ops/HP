@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section>
+  <h1>Príležitosti</h1>
+  <table class="bots">
+    <thead><tr><th>Čas</th><th>Stratégia</th><th>Trh</th><th>Návrh obchodu</th><th>Confidence</th><th>Stav</th></tr></thead>
+    <tbody>
+      {% for o in opportunities %}
+      <tr>
+        <td>{{ o.time }}</td>
+        <td>{{ o.strategy }}</td>
+        <td>{{ o.market }}</td>
+        <td>{{ o.proposal }}</td>
+        <td>{{ o.confidence }}</td>
+        <td>{{ o.state }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

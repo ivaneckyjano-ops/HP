@@ -1,0 +1,3 @@
+.venv/
+.env
+droplet_snapshot/

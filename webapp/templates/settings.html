@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section>
+  <h1>Nastavenia</h1>
+  {% if allow_control %}
+    <p>Reštart služieb je povolený.</p>
+    <form method="post" action="/api/restart/saxo-token-daemon-demo" onsubmit="return confirm('Reštartovať saxo-token-daemon-demo?')">
+      <button type="submit">Reštartovať saxo-token-daemon-demo</button>
+    </form>
+    <form method="post" action="/api/restart/saxo-token-daemon-live" onsubmit="return confirm('Reštartovať saxo-token-daemon-live?')">
+      <button type="submit">Reštartovať saxo-token-daemon-live</button>
+    </form>
+    <form method="post" action="/api/restart/token-proxy-demo" onsubmit="return confirm('Reštartovať token-proxy-demo?')">
+      <button type="submit">Reštartovať token-proxy-demo</button>
+    </form>
+    <form method="post" action="/api/restart/token-proxy-live" onsubmit="return confirm('Reštartovať token-proxy-live?')">
+      <button type="submit">Reštartovať token-proxy-live</button>
+    </form>
+  {% else %}
+    <p>Reštart služieb nie je povolený. Ak chcete povoliť, nastavte premennú prostredia ENABLE_SERVICE_CONTROL=1 a prípadne COMPOSE_FILE.</p>
+  {% endif %}
+</section>
+{% endblock %}

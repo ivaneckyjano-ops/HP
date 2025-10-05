@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section>
+  <h1>Droplet – monitoring</h1>
+  <div class="widgets">
+    <div class="widget">
+      <h3>Systémové zdroje</h3>
+      <ul>
+        <li>CPU: {{ status.cpu_percent }}%</li>
+        <li>RAM: {{ status.memory.percent }}%</li>
+        <li>Disk: {{ status.disk.percent }}%</li>
+        <li>Uptime (epoch): {{ status.uptime }}</li>
+      </ul>
+    </div>
+    <div class="widget">
+      <h3>Bežiace služby</h3>
+      <table class="bots">
+        <thead><tr><th>Názov</th><th>Typ</th><th>Stav</th><th>Akcie</th></tr></thead>
+        <tbody>
+          {% for s in services %}
+          <tr>
+            <td>{{ s.name }}</td>
+            <td>{{ s.kind }}</td>
+            <td>
+              {% if s.status == 'OK' %}
+                <span class="badge ok">OK</span>
+              {% elif s.status == 'Degraded' %}
+                <span class="badge warn">Degraded</span>
+              {% else %}
+                <span class="badge err">Down</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if allow_control and s.name != 'webapp' %}
+                <form method="post" action="/api/restart/{{ s.name }}" style="display:inline" onsubmit="return confirm('Reštartovať {{ s.name }}?')">
+                  <button type="submit">Reštart</button>
+                </form>
+              {% else %}
+                -
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <details style="margin-top:12px">
+        <summary>Detaily tokenov</summary>
+        <pre>{{ extra | tojson(indent=2) }}</pre>
+      </details>
+    </div>
+  </div>
+</section>
+{% endblock %}

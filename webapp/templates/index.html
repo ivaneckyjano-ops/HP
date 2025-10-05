@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="dashboard">
+    <header>
+      <h1>Dashboard</h1>
+    </header>
+    <div class="widgets">
+      <div class="widget">
+        <h3>Rýchly prehľad</h3>
+        <p>Celkový P/L dnes: <strong>+123€</strong></p>
+        <p>Equity curve (mini)</p>
+      </div>
+      <div class="widget">
+        <h3>Boty</h3>
+        <table class="bots">
+          <thead><tr><th>Názov</th><th>Stratégia</th><th>Trh</th><th>Kapitál</th><th>P/L</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for b in bots %}
+            <tr>
+              <td>{{ b.name }}</td>
+              <td>{{ b.strategy }}</td>
+              <td>{{ b.market }}</td>
+              <td>{{ b.capital }}</td>
+              <td>{{ b.pl }}</td>
+              <td>{{ b.status }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="widget">
+        <h3>Stav dropletu</h3>
+        <ul>
+          <li>CPU: {{ status.cpu_percent }}%</li>
+          <li>RAM: {{ status.memory.percent }}%</li>
+          <li>Disk: {{ status.disk.percent }}%</li>
+          <li>Uptime (epoch): {{ status.uptime }}</li>
+        </ul>
+      </div>
+      <div class="widget">
+        <h3>Token služby</h3>
+        <div class="token">
+          <h4>Demo</h4>
+          {% if token_demo %}
+            <p>access_token: {{ token_demo.access_token[:8] }}... </p>
+            <p>expires_at: {{ token_demo.expires_at }}</p>
+          {% else %}
+            <p><em>nie dostupné</em></p>
+          {% endif %}
+        </div>
+        <div class="token">
+          <h4>Live</h4>
+          {% if token_live %}
+            <p>access_token: {{ token_live.access_token[:8] }}... </p>
+            <p>expires_at: {{ token_live.expires_at }}</p>
+          {% else %}
+            <p><em>nie dostupné</em></p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

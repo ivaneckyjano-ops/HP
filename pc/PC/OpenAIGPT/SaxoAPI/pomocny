@@ -1,0 +1,16 @@
+# 1. Pridanie (alebo úprava) premenných do .bashrc
+cat <<'EOF' >> ~/.bashrc
+export SAXO_CLIENT_ID='17800719'               # Váš Client ID z Saxo Developer Portálu
+export SAXO_ENV='live'                         # alebo 'sim' pre testovacie prostredie
+export SAXO_REDIRECT_URI='http://localhost:8765/callback'
+export SAXO_SCOPES='openid offline_access read'
+EOF
+
+
+CLIENT_ID = os.getenv("SAXO_CLIENT_ID")
+ENV = (os.getenv("SAXO_ENV") or "sim").lower()   # sim | live
+REDIRECT_URI = os.getenv("SAXO_REDIRECT_URI", "http://localhost:8765/callback")
+SCOPES = os.getenv("SAXO_SCOPES", "openid offline_access read")
+TOKEN_STORE = "tokens.json"
+OUT_PDF = "positions.pdf"
+OUT_RAW = "positions_raw.json"

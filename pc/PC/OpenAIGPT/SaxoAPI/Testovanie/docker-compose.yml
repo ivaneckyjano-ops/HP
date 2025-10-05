@@ -1,0 +1,186 @@
+version: '3.8'
+
+services:
+  # Demo token daemon
+  saxo-token-daemon-demo:
+    build:
+      context: ../../../../../
+      dockerfile: droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/Dockerfile
+    container_name: saxo-token-daemon-demo
+    command: ["python3", "/app/droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/token_daemon.py", "--tokens-file", "/data/tokens_demo.json"]
+    environment:
+      - SAXO_CLIENT_ID=${SAXO_CLIENT_ID}
+      - SAXO_CLIENT_SECRET=${SAXO_CLIENT_SECRET}
+      - SAXO_ENV=sim
+      - TOKENS_FILE=/data/tokens_demo.json
+    volumes:
+      - tokens-demo:/data
+    restart: unless-stopped
+
+  # Live token daemon
+  saxo-token-daemon-live:
+    build:
+      context: ../../../../../
+      dockerfile: droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/Dockerfile
+    container_name: saxo-token-daemon-live
+    command: ["python3", "/app/droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/token_daemon.py", "--tokens-file", "/data/tokens_live.json"]
+    environment:
+      - SAXO_CLIENT_ID=${SAXO_CLIENT_ID}
+      - SAXO_CLIENT_SECRET=${SAXO_CLIENT_SECRET}
+      - SAXO_ENV=live
+      - TOKENS_FILE=/data/tokens_live.json
+    volumes:
+      - tokens-live:/data
+    restart: unless-stopped
+
+  # Demo token proxy (exposed on host:8080)
+  token-proxy-demo:
+    build:
+      context: ../../../../../
+      dockerfile: droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/Dockerfile
+    container_name: token-proxy-demo
+    command: ["python3", "/app/droplet/var02/token_proxy.py"]
+    environment:
+      - TOKENS_FILE=/data/tokens_demo.json
+      - PROXY_HOST=0.0.0.0
+      - PROXY_PORT=8080
+    volumes:
+      - tokens-demo:/data
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  # Live token proxy (exposed on host:8081)
+  token-proxy-live:
+    build:
+      context: ../../../../../
+      dockerfile: droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/Dockerfile
+    container_name: token-proxy-live
+    command: ["python3", "/app/droplet/var02/token_proxy.py"]
+    environment:
+      - TOKENS_FILE=/data/tokens_live.json
+      - PROXY_HOST=0.0.0.0
+      - PROXY_PORT=8081
+    volumes:
+      - tokens-live:/data
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+
+  # Web UI service
+  webapp:
+    build:
+      context: ../../../../../
+      dockerfile: webapp/dev.Dockerfile
+    container_name: saxo-webapp
+    environment:
+      - PROXY_DEMO_URL=http://token-proxy-demo:8080/token
+      - PROXY_LIVE_URL=http://token-proxy-live:8080/token
+      - ALLOW_RESTART=false
+    ports:
+      - "5000:5000"
+    depends_on:
+      - token-proxy-demo
+      - token-proxy-live
+    restart: unless-stopped
+
+  # Live token daemon reader
+  saxo-token-daemon-live-reader:
+    build:
+      context: ../../../../../
+      dockerfile: droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/Dockerfile
+    container_name: saxo-token-daemon-live-reader
+    command: ["python3", "/app/droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/token_daemon.py", "--tokens-file", "/data/tokens_live_reader.json"]
+    env_file:
+      - ./secrets/live/reader.env
+    environment:
+      - TOKENS_FILE=/data/tokens_live_reader.json
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+
+  # Live token daemon 0dte
+  saxo-token-daemon-live-0dte:
+    build:
+      context: ../../../../../
+      dockerfile: droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/Dockerfile
+    container_name: saxo-token-daemon-live-0dte
+    command: ["python3", "/app/droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/token_daemon.py", "--tokens-file", "/data/tokens_live_0dte.json"]
+    env_file:
+      - ./secrets/live/trade_0dte.env
+    environment:
+      - TOKENS_FILE=/data/tokens_live_0dte.json
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+
+  # Live token daemon trader
+  saxo-token-daemon-live-trader:
+    build:
+      context: ../../../../../
+      dockerfile: droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/Dockerfile
+    container_name: saxo-token-daemon-live-trader
+    command: ["python3", "/app/droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/token_daemon.py", "--tokens-file", "/data/tokens_live_trader.json"]
+    env_file:
+      - ./secrets/live/trader.env
+    environment:
+      - TOKENS_FILE=/data/tokens_live_trader.json
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+
+  # Token proxy live reader
+  token-proxy-live-reader:
+    build:
+      context: ../../../../../
+      dockerfile: droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/Dockerfile
+    container_name: token-proxy-live-reader
+    command: ["python3", "/app/droplet/var02/token_proxy.py"]
+    environment:
+      - TOKENS_FILE=/data/tokens_live_reader.json
+      - PROXY_HOST=0.0.0.0
+      - PROXY_PORT=8080
+    ports:
+      - "8181:8080"
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+
+  # Token proxy live 0dte
+  token-proxy-live-0dte:
+    build:
+      context: ../../../../../
+      dockerfile: droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/Dockerfile
+    container_name: token-proxy-live-0dte
+    command: ["python3", "/app/droplet/var02/token_proxy.py"]
+    environment:
+      - TOKENS_FILE=/data/tokens_live_0dte.json
+      - PROXY_HOST=0.0.0.0
+      - PROXY_PORT=8080
+    ports:
+      - "8182:8080"
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+
+  # Token proxy live trader
+  token-proxy-live-trader:
+    build:
+      context: ../../../../../
+      dockerfile: droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/Dockerfile
+    container_name: token-proxy-live-trader
+    command: ["python3", "/app/droplet/var02/token_proxy.py"]
+    environment:
+      - TOKENS_FILE=/data/tokens_live_trader.json
+      - PROXY_HOST=0.0.0.0
+      - PROXY_PORT=8080
+    ports:
+      - "8183:8080"
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+
+volumes:
+  tokens-demo: {}
+  tokens-live: {}
+

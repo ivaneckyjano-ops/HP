@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  saxo-token-daemon:
+    build:
+      context: ../../../../../
+      dockerfile: droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/Dockerfile
+    container_name: saxo-token-daemon
+    command: ["python3", "/app/droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/token_daemon.py"]
+    environment:
+      - SAXO_CLIENT_ID=${SAXO_CLIENT_ID}
+      - SAXO_CLIENT_SECRET=${SAXO_CLIENT_SECRET}
+      - TOKENS_FILE=/data/tokens_min.json
+    volumes:
+      - tokens-data:/data
+    restart: unless-stopped
+
+  token-proxy:
+    build:
+      context: ../../../../../
+      dockerfile: droplet/PC/OpenAIGPT/SaxoAPI/Testovanie/Dockerfile
+    container_name: saxo-token-proxy
+    command: ["python3", "/app/droplet/var02/token_proxy.py"]
+    environment:
+      - TOKENS_FILE=/data/tokens_min.json
+      - PROXY_HOST=0.0.0.0
+      - PROXY_PORT=8080
+    volumes:
+      - tokens-data:/data
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  tokens-data: {}
+

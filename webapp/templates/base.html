@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Saxo Live - Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <h2>Saxo Live</h2>
+        <nav>
+          <a href="/dashboard">Dashboard</a>
+          <a href="/bots">Boti</a>
+          <a href="/dennik">Denník</a>
+          <a href="/strategie">Stratégie</a>
+          <a href="/prilezitosti">Príležitosti</a>
+          <a href="/droplet">Droplet</a>
+          <a href="/reports">Reporty</a>
+          <a href="/settings">Nastavenia</a>
+        </nav>
+      </aside>
+      <main class="main">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </body>
+</html>

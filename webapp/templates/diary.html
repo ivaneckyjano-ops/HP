@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section>
+  <h1>Denník</h1>
+  <table class="bots">
+    <thead><tr><th>Dátum</th><th>Bot/Stratégia</th><th>Inštrument</th><th>Vstup</th><th>Výstup</th><th>P/L</th></tr></thead>
+    <tbody>
+      {% for t in trades %}
+      <tr>
+        <td>{{ t.date }}</td>
+        <td>{{ t.bot }}</td>
+        <td>{{ t.instrument }}</td>
+        <td>{{ t.entry }}</td>
+        <td>{{ t.exit }}</td>
+        <td>{{ t.pl }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}
