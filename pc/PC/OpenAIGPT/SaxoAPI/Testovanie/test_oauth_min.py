@@ -21,7 +21,7 @@ import requests
 CLIENT_ID = os.getenv("SAXO_CLIENT_ID", "TU_DAJ_SVOJ_APPKEY")  # povinne doplň alebo nastav env SAXO_CLIENT_ID
 CLIENT_SECRET = os.getenv("SAXO_CLIENT_SECRET", "").strip()  # nechaj prázdne, ak nemáš secret
 ENV = (os.getenv("SAXO_ENV") or "sim").lower()  # "sim" alebo "live"
-REDIRECT_URI = "http://127.0.0.1:8765/callback"  # presne takto nech je registrované v app
+REDIRECT_URI = os.getenv("REDIRECT_URI", "http://127.0.0.1:8765/callback")  # môžeš prebiť env premennou
 
 if ENV == "live":
     AUTH_BASE = "https://live.logonvalidation.net"

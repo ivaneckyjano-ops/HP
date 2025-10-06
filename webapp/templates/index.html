@@ -30,13 +30,17 @@
         </table>
       </div>
       <div class="widget">
-        <h3>Stav dropletu</h3>
+        <h3>Stav testovania systému</h3>
         <ul>
-          <li>CPU: {{ status.cpu_percent }}%</li>
-          <li>RAM: {{ status.memory.percent }}%</li>
-          <li>Disk: {{ status.disk.percent }}%</li>
-          <li>Uptime (epoch): {{ status.uptime }}</li>
+          <li>Stratégie: {{ testing_status.strategies_count }} ({{ testing_status.strategies|join(', ') }})</li>
+          <li>Watchlist: {{ testing_status.watchlist_count }} instrumentov</li>
+          <li>Posledné vyhodnotenie: {{ testing_status.last_evaluation or 'Žiadne' }}</li>
+          <li>Celkové obchody: {{ testing_status.total_trades }}</li>
+          <li>Celkový P&L: <strong>${{ "%.2f"|format(testing_status.total_pnl) }}</strong></li>
         </ul>
+        {% if testing_status.error %}
+        <p style="color: red;">Chyba: {{ testing_status.error }}</p>
+        {% endif %}
       </div>
       <div class="widget">
         <h3>Token služby</h3>

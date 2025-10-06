@@ -1,0 +1,125 @@
+kód: CSQQQ-0DTE-CALL-A
+názov: QQQ 0DTE — jednostranný kreditný CALL spread (intradenný 5%)
+typ: diagonálny_kreditný_spread
+verzia: 1
+aktívne: pravda
+rozsah:
+účty: ["*"]
+podklady: ["QQQ"]
+instrumenty: ["opcie"]
+postupné_pravidlá:
+
+- názov: otvorenie
+  strana: CALL
+  spúšťač:
+  DTE: [0, 0]
+  IVR: [25, 80]
+  greeks:
+  cieľová_abs_delta_krátkej: 0.15
+  časové_okno_ET: "09:45-15:30"
+  window_days: [0, 0]
+  cieľ:
+  cieľový_dte: 0
+  ponechať_štruktúru: kreditný_spread
+  strike_konvencia:
+  krátka_noha: "2–3 strike nad spot (|Δ|≈0.12–0.18)"
+  dlhá_noha: "o 1 strike ďalej OTM"
+  long_wing_DTE: 1
+  nepresúvať_cez_víkend: pravda
+  fallback_long_wing_DTE_ak_víkend: 0
+  ekonomika:
+  min_kredit: 0.70
+  min_výnos_percento: 2.5
+  transakčné_náklady_usd: 3
+  obmedzenia:
+  skip_if_earnings_within_days: 0
+  avoid_weeklies: nepravda
+  min_days_between_rolls: 0
+- názov: manažment/risk
+  spúšťač:
+  DTE: [0, 0]
+  greeks:
+  max_abs_delta_krátkej_nohy: 0.35
+  breach:
+  podklad_dotyk_krátkej_strike: pravda
+  window_days: [0, 0]
+  cieľ:
+  ponechať_štruktúru: kreditný_spread
+  cieľový_dte: 0
+  roll_priorita: "najprv v rámci 0DTE ďalej OTM; ak nedostatočný kredit, prejsť na DTE+1"
+  cieľová_abs_delta_po_rolle: 0.10
+  ekonomika:
+  min_kredit: 0.10
+  min_zlepšenie_percento: 10
+  obmedzenia:
+  entry_hours_et: "09:45-15:30"
+  min_days_between_rolls: 0
+- názov: výstup/zisk
+  spúšťač:
+  PNL_percento_z_marže: [2.5, 5.0]
+  window_days: [0, 0]
+  cieľ:
+  zatvoriť_percento: 100
+  ponechať_štruktúru: žiadna
+  ekonomika:
+  min_výnos_percento: 2.5
+  obmedzenia:
+  close_if_minutes_to_close_leq: 15
+- názov: výstup/stop_loss_a_expirácia
+  spúšťač:
+  minutes_to_close_leq: 10
+  ITM_breach: pravda
+  window_days: [0, 0]
+  cieľ:
+  zatvoriť_percento: 100
+  ponechať_štruktúru: žiadna
+  ekonomika:
+  max_strata_percento_z_marže: 6
+  obmedzenia:
+  force_close_if_assignment_risk: pravda
+  limity_rizika:
+  max_zmluvy_na_podkladový_aktív: 12
+  max_nominálny_aktív: 150000
+  max_util_percento_marže: 25
+  pnl_podlaha_percento_z_marže: -6
+  pnl_strop_percento_z_marže: 5
+  grécke_limity:
+  abs_delta: 40
+  vega: 15
+  theta: -999
+  veľkosť:
+  zmluvy: "floor( min(0.005 * kapitál, 2500) / marža_na_zmluvu )"
+  maximálny_zlomok_kapitálu: 0.02
+  filtre_likvidity:
+  min_otvorený_záujem: 1000
+  min_objem: 300
+  max_ponuka_požadovaného_rozpätia_%: 15
+  zoznam_povolených_exchanges: ["CBOE", "C2", "ISE", "MIAX", "ARCA", "BOX", "PHLX", "GEMX", "MRX", "NOM"]
+  prevedenie:
+  tif: DAY
+  cenový_model: stred
+  limit_offset_bps: 0
+  max_slippage_bps: 75
+  povoliť_čiastočné_vyplnenie: nepravda
+  inteligentné_smerovanie: pravda
+  zábradlia:
+  max_denných_obchodov: 3
+  max_roly_na_podkladový_aktív_za_deň: 3
+  minúty_cooldownu: 15
+  upozornenia:
+    kanály:
+      - e-mail
+      - webhook
+    prahové_hodnoty:
+      missing_liquidity: pravda
+      roll_fail: pravda
+      price_deviation_bps: 100
+    ostražitý:
+      gamma_riziko_minutes_to_close: 30
+      akcia: "pri rýchlom raste zatvoriť ohrozenú CALL stranu; cez noc nič nedržať"
+      zákaz_cez_víkend: pravda
+    metadáta:
+      značky: ["intraday", "0DTE", "QQQ", "call_spread"]
+      poznámky: "Krátka noha DTE 0, dlhá noha DTE 1 (ak by prešla cez víkend, použi DTE 0). Minimálny kredit ≥ 0.70 USD."
+      účinný_od: "2025-10-01"
+      účinný_do: null

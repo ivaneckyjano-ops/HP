@@ -1,0 +1,50 @@
+# Watchlist pre sledovanie instrumentov
+# Spoločná pre demo aj live
+
+instruments:
+  - symbol: QQQ
+    asset_type: Stock
+    description: Invesco QQQ ETF
+    uic: null  # bude vyplnené automaticky pri prvom behu
+  - symbol: KO
+    asset_type: Stock
+    description: Coca-Cola Company
+    uic: null
+  - symbol: AMBP
+    asset_type: Stock
+    description: Ardagh Metal Packaging S.A.
+    uic: null
+  - symbol: NAT
+    asset_type: Stock
+    description: Nordic American Tankers
+    uic: null
+  - symbol: UWMC
+    asset_type: Stock
+    description: UWM Holdings Corporation
+    uic: null
+  - symbol: UUUU
+    asset_type: Stock
+    description: Energy Fuels
+    uic: null
+  - symbol: PLUG
+    asset_type: Stock
+    description: Plug Power
+    uic: null
+  - symbol: MRK
+    asset_type: Stock
+    description: Merck & Co.
+    uic: null
+  - symbol: BBY
+    asset_type: Stock
+    description: Best Buy
+    uic: null
+  - symbol: PYPL
+    asset_type: Stock
+    description: PayPal Holdings
+    uic: null
+  - symbol: UNH
+    asset_type: Stock
+    description: UnitedHealth Group
+    uic: null
+
+# Možno pridať options, ale tie sa budú dynamicky sledovať podľa stratégií

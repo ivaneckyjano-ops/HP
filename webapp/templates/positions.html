@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="dashboard">
+  <header>
+    <h1>Pozície (LIVE)</h1>
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap">
+      <form method="post" action="/api/ingest-now" onsubmit="return ingestNow(event)">
+        <button type="submit" class="btn">Načítať teraz</button>
+      </form>
+      {% if last_updated_ts %}
+        {% if last_updated_age <= 120 %}
+          <span class="badge ok">Aktualizované pred {{ last_updated_age }} s</span>
+        {% elif last_updated_age <= 600 %}
+          <span class="badge warn">Aktualizované pred {{ last_updated_age }} s</span>
+        {% else %}
+          <span class="badge err">Staré dáta ({{ last_updated_age }} s)</span>
+        {% endif %}
+      {% else %}
+        <span class="badge warn">Bez histórie aktualizácie</span>
+      {% endif %}
+    </div>
+    <p class="muted">Tlačidlo spustí okamžité načítanie pozícií cez token proxy a uloží ich do lokálneho store.</p>
+  </header>
+  {% if payload.error %}
+    <p class="badge err">Store nedostupný</p>
+  {% endif %}
+  <p>Počet záznamov: {{ payload.count }}</p>
+  <table class="bots">
+    <thead>
+      <tr>
+        <th>UIC</th><th>Symbol</th><th>Account</th><th>Amount</th><th>Last Price</th><th>PnL</th><th>Updated</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in payload.data %}
+      <tr>
+        <td>{{ r.uic }}</td>
+        <td>{{ r.symbol }}</td>
+        <td>{{ r.account_id }}</td>
+        <td>{{ r.amount }}</td>
+        <td>{{ r.last_price }}</td>
+        <td>{{ r.pnl }}</td>
+        <td>{{ r.updated_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<script>
+async function ingestNow(ev) {
+  ev.preventDefault();
+  try {
+    const res = await fetch('/api/ingest-now', { method: 'POST' });
+    const j = await res.json();
+    if (j && j.ok) {
+      // simple reload to reflect new data
+      location.reload();
+    } else {
+      alert('Ingest zlyhal: ' + (j.error || j.store_resp || res.status));
+    }
+  } catch (e) {
+    alert('Chyba: ' + e);
+  }
+  return false;
+}
+</script>
+{% endblock %}

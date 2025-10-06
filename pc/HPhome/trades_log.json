@@ -1,0 +1,48 @@
+[
+  {
+    "timestamp": "2025-10-05T14:30:00",
+    "strategy": "ICQQQ-0DTE-A",
+    "action": "open_summary",
+    "type": "iron_condor",
+    "total_premium": 1.20,
+    "total_commission": 2.0,
+    "net_credit": 1.20,
+    "net_cost": 2.0
+  },
+  {
+    "timestamp": "2025-10-05T15:45:00",
+    "strategy": "ICQQQ-0DTE-A",
+    "action": "roll",
+    "type": "iron_condor",
+    "total_cost": 3.5,
+    "reason": "breach_management"
+  },
+  {
+    "timestamp": "2025-10-05T16:25:00",
+    "strategy": "ICQQQ-0DTE-A",
+    "action": "close",
+    "type": "iron_condor",
+    "realized_pnl": -0.80,
+    "commission": 1.0,
+    "reason": "expiration"
+  },
+  {
+    "timestamp": "2025-10-05T14:45:00",
+    "strategy": "CSQQQ-0DTE-PUT-A",
+    "action": "open_summary",
+    "type": "credit_spread",
+    "total_premium": 0.75,
+    "total_commission": 1.0,
+    "net_credit": 0.75,
+    "net_cost": 1.0
+  },
+  {
+    "timestamp": "2025-10-05T16:20:00",
+    "strategy": "CSQQQ-0DTE-PUT-A",
+    "action": "close",
+    "type": "credit_spread",
+    "realized_pnl": 0.65,
+    "commission": 0.5,
+    "reason": "target_hit"
+  }
+]

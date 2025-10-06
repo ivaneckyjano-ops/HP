@@ -59,7 +59,7 @@ services:
     environment:
       - TOKENS_FILE=/data/tokens_live.json
       - PROXY_HOST=0.0.0.0
-      - PROXY_PORT=8081
+      - PROXY_PORT=8080
     volumes:
       - tokens-live:/data
     ports:
@@ -74,13 +74,15 @@ services:
     container_name: saxo-webapp
     environment:
       - PROXY_DEMO_URL=http://token-proxy-demo:8080/token
-      - PROXY_LIVE_URL=http://token-proxy-live:8080/token
+      - PROXY_LIVE_URL=http://token-proxy-live-reader:8080/token
       - ALLOW_RESTART=false
+      - STORE_URL=http://positions-store:8090
     ports:
       - "5000:5000"
     depends_on:
       - token-proxy-demo
-      - token-proxy-live
+      - token-proxy-live-reader
+      - positions-store
     restart: unless-stopped
 
   # Live token daemon reader
@@ -145,6 +147,41 @@ services:
       - ./data:/data
     restart: unless-stopped
 
+  # Positions store (SQLite + Flask)
+  positions-store:
+    build:
+      context: ../../../../../
+      dockerfile: pc/PC/OpenAIGPT/SaxoAPI/Testovanie/Dockerfile
+    container_name: positions-store
+    command: ["python3", "/app/pc/PC/OpenAIGPT/SaxoAPI/Testovanie/positions_store.py"]
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8090
+      - DB_PATH=/data/positions.db
+      - THRESHOLD_PCT=0.005
+      - THRESHOLDS_FILE=/data/thresholds.json
+    volumes:
+      - ./data:/data
+    ports:
+      - "8090:8090"
+    restart: unless-stopped
+
+  # Periodic ingestor to push positions into the store automatically
+  positions-ingestor:
+    build:
+      context: ../../../../../
+      dockerfile: pc/PC/OpenAIGPT/SaxoAPI/Testovanie/Dockerfile
+    container_name: positions-ingestor
+    environment:
+      - PROXY_URL=http://token-proxy-live-reader:8080/token
+      - STORE_URL=http://positions-store:8090/ingest
+      - INGEST_INTERVAL=60
+    command: ["sh", "-lc", "while true; do python3 /app/pc/PC/OpenAIGPT/SaxoAPI/Testovanie/live_read_status.py --proxy ${PROXY_URL} --post-to-store ${STORE_URL} || true; sleep ${INGEST_INTERVAL}; done"]
+    depends_on:
+      - token-proxy-live-reader
+      - positions-store
+    restart: unless-stopped
+
   # Token proxy live 0dte
   token-proxy-live-0dte:
     build:
@@ -177,6 +214,40 @@ services:
       - "8183:8080"
     volumes:
       - ./data:/data
+    restart: unless-stopped
+
+  # Strategy Executor (trading system)
+  strategy-executor:
+    build:
+      context: ../../../../../
+      dockerfile: pc/HPhome/Dockerfile
+    container_name: strategy-executor
+    environment:
+      - PROXY_URL=http://token-proxy-live-trader:8080/token
+      - STORE_URL=http://positions-store:8090
+    command: ["python3", "pc/HPhome/strategy_executor.py"]
+    volumes:
+      - /workspaces/narbon-jan-HP/pc/HPhome:/app/pc/HPhome
+      - ./data:/data
+    depends_on:
+      - token-proxy-live-trader
+      - positions-store
+    restart: unless-stopped
+
+  # Data Collector (periodic data collection)
+  data-collector:
+    build:
+      context: ../../../../../
+      dockerfile: pc/HPhome/Dockerfile
+    container_name: data-collector
+    environment:
+      - PROXY_URL=http://token-proxy-live-reader:8080/token
+    command: ["sh", "-c", "while true; do python3 pc/HPhome/data_collector_qqq.py; sleep 300; done"]
+    volumes:
+      - /workspaces/narbon-jan-HP/pc/HPhome:/app/pc/HPhome
+      - ./data:/data
+    depends_on:
+      - token-proxy-live-reader
     restart: unless-stopped
 
 volumes:

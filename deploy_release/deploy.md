@@ -2,17 +2,18 @@
 
 Tento dokument popisuje postup nasadenia token refresher-a a token proxy na server (droplet).
 
-Obsahujem dve odporúčané možnosti:
+Obsahuje tri odporúčané možnosti:
 
-- Docker Compose — rýchle, izolované a ľahko aktualizovateľné nasadenie (odporúčané).
-- systemd — jednoduché natívne nasadenie bez Dockeru.
+- Docker Compose — rýchle, izolované a ľahko aktualizovateľné nasadenie (odporúčané pre test/dev).
+- Docker Compose + systemd — autoštart celej zostavy po reboote (odporúčané pre droplet/produkciu).
+- systemd — jednoduché natívne nasadenie bez Dockeru (iba vybrané skripty mimo kontajnerov).
 
 ---
 
 ## Predpoklady
 
-- Skripty v repozitári: `Testovanie/token_daemon.py` a `droplet/var02/token_proxy.py`.
-- V priečinku `Testovanie/` sú `Dockerfile` a `docker-compose.yml` (repo obsahuje pripravené súbory).
+- Skripty v repozitári: `pc/PC/OpenAIGPT/SaxoAPI/Testovanie/token_daemon.py` a `droplets/conare/var02/token_proxy.py`.
+- V priečinku `pc/PC/OpenAIGPT/SaxoAPI/Testovanie/` sú `Dockerfile` a `docker-compose.yml` (repo obsahuje pripravené súbory).
 - Na serveri je nainštalovaný Docker + Docker Compose (ak ideš touto cestou) alebo Python 3 + pip (pre systemd).
 - Citlivé údaje (SAXO_CLIENT_ID a SAXO_CLIENT_SECRET) nikdy necommituj do repozitára. Použi `.env`, Docker secrets alebo správcu tajomstiev.
 
@@ -23,7 +24,7 @@ Obsahujem dve odporúčané možnosti:
 1) Presuň sa do adresára s `docker-compose.yml`:
 
 ```bash
-cd /cesta/k/repozitaru/droplet/PC/OpenAIGPT/SaxoAPI/Testovanie
+cd /cesta/k/repozitaru/pc/PC/OpenAIGPT/SaxoAPI/Testovanie
 ```
 
 2) Skopíruj `.env.example` na `.env` a uprav ho:
@@ -73,6 +74,95 @@ Bezpečnostné poznámky pre Docker:
 
 ---
 
+## Docker Compose + systemd — autoštart celej zostavy
+
+Tento režim spustí celú zostavu (token-daemon live-reader, token-proxy-live-reader, positions-store, positions-ingestor, webapp) automaticky po štarte servera.
+
+Predpoklady:
+
+- Docker + Docker Compose nainštalované a funkčné.
+- Systémová služba bude používať compose súbor v `pc/PC/OpenAIGPT/SaxoAPI/Testovanie/docker-compose.yml`.
+
+Kroky:
+
+1) Skopíruj repozitár na server a umiestni ho do `/opt/saxo` (odporúčané):
+
+```bash
+sudo mkdir -p /opt/saxo
+# buď rsync
+sudo rsync -a --delete /cesta/k/repozitaru/ /opt/saxo/
+# alebo git clone priamo do /opt/saxo
+```
+
+2) Priprav `.env` pre compose:
+
+```bash
+cd /opt/saxo/pc/PC/OpenAIGPT/SaxoAPI/Testovanie
+cp .env.example .env
+chmod 600 .env
+# nastav SAXO_CLIENT_ID, SAXO_CLIENT_SECRET a prípadné REDIRECT_URI
+```
+
+3) Nainštaluj systemd unit pre autoštart:
+
+```bash
+sudo cp /opt/saxo/deploy_release/saxo-stack.service /etc/systemd/system/
+sudoedit /etc/systemd/system/saxo-stack.service  # skontroluj cesty k docker-compose.yml
+sudo systemctl daemon-reload
+sudo systemctl enable --now saxo-stack.service
+```
+
+4) Over beh a logy:
+
+```bash
+systemctl status saxo-stack
+docker compose -f /opt/saxo/pc/PC/OpenAIGPT/SaxoAPI/Testovanie/docker-compose.yml ps
+docker compose -f /opt/saxo/pc/PC/OpenAIGPT/SaxoAPI/Testovanie/docker-compose.yml logs -f
+```
+
+5) Aktualizácie/restarty:
+
+```bash
+cd /opt/saxo
+sudo git pull --rebase  # alebo rsync novej verzie
+sudo docker compose -f pc/PC/OpenAIGPT/SaxoAPI/Testovanie/docker-compose.yml build --pull
+sudo systemctl restart saxo-stack
+```
+
+6) Zastavenie/odstránenie:
+
+```bash
+sudo systemctl disable --now saxo-stack
+sudo docker compose -f /opt/saxo/pc/PC/OpenAIGPT/SaxoAPI/Testovanie/docker-compose.yml down -v
+sudo rm -f /etc/systemd/system/saxo-stack.service
+sudo systemctl daemon-reload
+```
+
+Prvé získanie tokenu (iba raz):
+
+- Pri prvom nasadení potrebuješ získať `refresh_token`. Môžeš použiť make ciele (ak je `make` k dispozícii):
+
+```bash
+make -C /opt/saxo auth-url-live-reader   # vypíše autorizačnú URL – otvor ju v prehliadači
+make -C /opt/saxo init-live-reader       # výmena kódu za tokeny (postupuje interaktívne)
+```
+
+- Alebo priamo cez Docker Compose (bez make):
+
+```bash
+docker compose -f /opt/saxo/pc/PC/OpenAIGPT/SaxoAPI/Testovanie/docker-compose.yml \
+	run --rm saxo-token-daemon-live-reader python /app/test_oauth_min.py --auth-url
+
+# potom vlož presmerovanú URL s ?code=... (REDIRECT_URI musí sedieť s nastavením v Saxo)
+docker compose -f /opt/saxo/pc/PC/OpenAIGPT/SaxoAPI/Testovanie/docker-compose.yml \
+	run --rm saxo-token-daemon-live-reader python /app/test_oauth_min.py --redirect-url "https://tvoja-redirect-host/?code=...&state=..."
+```
+
+Poznámka k bezpečnosti:
+
+- `token-proxy` je štandardne dostupný len v rámci internej siete Compose, pokiaľ v `docker-compose.yml` nepoužiješ `ports:`. Na prístup z internetu použi reverzný proxy s TLS a autentifikáciou.
+- `webapp` a `positions-store` otvárajú porty; zváž firewall a prípadne reverzný proxy.
+
 ## Nasadenie pomocou systemd (bez Dockeru)
 
 Použi tento postup, ak nechceš spúšťať kontajnery.
@@ -91,8 +181,8 @@ deactivate
 ```bash
 sudo mkdir -p /opt/saxo
 sudo chown $USER:$USER /opt/saxo
-cp -r /cesta/k/repozitaru/droplet/PC/OpenAIGPT/SaxoAPI/Testovanie /opt/saxo/
-cp /cesta/k/repozitaru/droplet/var02/token_proxy.py /opt/saxo/
+cp -r /cesta/k/repozitaru/pc/PC/OpenAIGPT/SaxoAPI/Testovanie /opt/saxo/
+cp /cesta/k/repozitaru/droplets/conare/var02/token_proxy.py /opt/saxo/
 ```
 
 3) Vytvor systemd unit súbor `/etc/systemd/system/saxo-token-daemon.service`:
@@ -146,12 +236,14 @@ Token proxy môžeš spustiť ako samostatný systemd service alebo ho nasadiť 
 
 ## Zhrnutie zmien v repozitári (čo som upravil)
 
-- `Testovanie/test_oauth_min.py` — opravené chyby, pridaná `--manual` možnosť, PKCE podpora, bezpečné atomické ukladanie tokenov a čítanie `TOKENS_FILE` z prostredia.
-- `Testovanie/token_daemon.py` — nový skript, ktorý pravidelne kontroluje TTL tokenu a vykonáva refresh.
-- `droplet/var02/token_proxy.py` — jednoduchý HTTP endpoint `GET /token` vracajúci `access_token` a `expires_at`.
-- `Testovanie/Dockerfile` — jednoduchý obraz pre token daemon.
-- `Testovanie/docker-compose.yml` — opravený a prepisaný; obsahuje obe služby a zdieľaný volume `tokens-data`.
-- Dokumentácia: `droplet/var02/README.md`, `proxy_README.md`, `deploy.md` (tento súbor bol práve preložený a rozšírený).
+- `pc/PC/OpenAIGPT/SaxoAPI/Testovanie/test_oauth_min.py` — opravené chyby, pridaná `--manual` možnosť, PKCE podpora, bezpečné atomické ukladanie tokenov a čítanie `TOKENS_FILE` z prostredia.
+- `pc/PC/OpenAIGPT/SaxoAPI/Testovanie/token_daemon.py` — nový skript, ktorý pravidelne kontroluje TTL tokenu a vykonáva refresh.
+- `droplets/conare/var02/token_proxy.py` — jednoduchý HTTP endpoint `GET /token` vracajúci `access_token` a `expires_at`.
+- `pc/PC/OpenAIGPT/SaxoAPI/Testovanie/Dockerfile` — jednoduchý obraz pre token daemon.
+- `pc/PC/OpenAIGPT/SaxoAPI/Testovanie/docker-compose.yml` — opravený a prepisaný; obsahuje služby a zdieľaný volume `tokens-data`.
+- `webapp/`, `positions_store.py`, `live_read_status.py` — pridané časti pre ukladanie a zobrazovanie pozícií (store + web UI + ingestor).
+- `deploy_release/saxo-stack.service` — systemd unit na autoštart celej Docker Compose zostavy.
+- Dokumentácia: `droplets/conare/var02/README.md`, `proxy_README.md`, `deploy.md` (tento súbor bol práve preložený a rozšírený).
 
 Všetky citlivé hodnoty sú štandardne čítané z prostredia — nepíšu sa do repozitára. Token súbory sa ukladajú atomicky a s právami 600.
 

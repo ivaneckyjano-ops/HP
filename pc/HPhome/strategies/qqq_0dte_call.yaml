@@ -1,0 +1,38 @@
+# Príklad stratégie: 0DTE QQQ Call
+name: qqq_0dte_call
+description: Buy 0DTE call when QQQ > 10-day MA and option premium > 0.50
+enabled: true
+env: demo  # demo alebo live
+
+# Podmienky na otvorenie
+conditions:
+  - type: price_above_ma
+    instrument: QQQ
+    ma_period: 10
+    timeframe: 1D  # denne, ale možno rozšíriť
+  - type: option_premium_above
+    underlying: QQQ
+    expiry: today
+    strike_offset: 0  # ATM
+    put_call: Call
+    threshold: 0.50
+
+# Akcie na otvorenie
+actions:
+  - type: buy_option
+    underlying: QQQ
+    expiry: today
+    strike_offset: 0  # ATM
+    put_call: Call
+    quantity: 1
+
+# Podmienky na zatvorenie (roll alebo close)
+close_conditions:
+  - type: time_based
+    close_at: 15:30 ET  # pred zatvorením
+  - type: pnl_threshold
+    target_pnl: 1.00  # zatvor ak P&L > 1
+    stop_loss: -0.50  # zatvor ak P&L < -0.50
+
+# Poznámky
+notes: Jednoduchá stratégia na testovanie 0DTE calls.

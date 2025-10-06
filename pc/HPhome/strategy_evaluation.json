@@ -1,0 +1,90 @@
+{
+  "generated_at": "2025-10-05T16:51:42.565193",
+  "strategy_stats": {
+    "ICQQQ-0DTE-A": {
+      "total_trades": 1,
+      "winning_trades": 0,
+      "total_premium": 1.2,
+      "total_commissions": 2.0,
+      "total_roll_costs": 3.5,
+      "total_close_costs": 1.0,
+      "net_pnl": -0.8,
+      "trades": [
+        {
+          "timestamp": "2025-10-05T14:30:00",
+          "strategy": "ICQQQ-0DTE-A",
+          "action": "open_summary",
+          "type": "iron_condor",
+          "total_premium": 1.2,
+          "total_commission": 2.0,
+          "net_credit": 1.2,
+          "net_cost": 2.0
+        },
+        {
+          "timestamp": "2025-10-05T15:45:00",
+          "strategy": "ICQQQ-0DTE-A",
+          "action": "roll",
+          "type": "iron_condor",
+          "total_cost": 3.5,
+          "reason": "breach_management"
+        },
+        {
+          "timestamp": "2025-10-05T16:25:00",
+          "strategy": "ICQQQ-0DTE-A",
+          "action": "close",
+          "type": "iron_condor",
+          "realized_pnl": -0.8,
+          "commission": 1.0,
+          "reason": "expiration"
+        }
+      ],
+      "total_costs": 6.5,
+      "net_pnl_after_costs": -6.1,
+      "win_rate": 0.0,
+      "avg_premium_per_trade": 1.2,
+      "avg_costs_per_trade": 6.5
+    },
+    "CSQQQ-0DTE-PUT-A": {
+      "total_trades": 1,
+      "winning_trades": 1,
+      "total_premium": 0.75,
+      "total_commissions": 1.0,
+      "total_roll_costs": 0,
+      "total_close_costs": 0.5,
+      "net_pnl": 0.65,
+      "trades": [
+        {
+          "timestamp": "2025-10-05T14:45:00",
+          "strategy": "CSQQQ-0DTE-PUT-A",
+          "action": "open_summary",
+          "type": "credit_spread",
+          "total_premium": 0.75,
+          "total_commission": 1.0,
+          "net_credit": 0.75,
+          "net_cost": 1.0
+        },
+        {
+          "timestamp": "2025-10-05T16:20:00",
+          "strategy": "CSQQQ-0DTE-PUT-A",
+          "action": "close",
+          "type": "credit_spread",
+          "realized_pnl": 0.65,
+          "commission": 0.5,
+          "reason": "target_hit"
+        }
+      ],
+      "total_costs": 1.5,
+      "net_pnl_after_costs": -0.10000000000000009,
+      "win_rate": 100.0,
+      "avg_premium_per_trade": 0.75,
+      "avg_costs_per_trade": 1.5
+    }
+  },
+  "summary": {
+    "total_trades": 2,
+    "total_wins": 1,
+    "total_premium": 1.95,
+    "total_costs": 8.0,
+    "net_pnl": -6.199999999999999
+  }
+}

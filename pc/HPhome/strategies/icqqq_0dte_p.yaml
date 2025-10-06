@@ -1,0 +1,112 @@
+kód: ICQQQ-0DTE-P
+názov: QQQ 0DTE Iron Condor — konzervatívny, nechať expirovať
+typ: železný_kondor
+verzia: 1
+aktívne: pravda
+rozsah:
+účty: ["*"]
+podklady: ["QQQ"]
+instrumenty: ["opcie"]
+postupné_pravidlá:
+
+- názov: otvorenie
+  spúšťač:
+  DTE: [0, 0]
+  IVR: [20, 80]
+  greeks:
+  cieľová_delta_krátkych:
+  call: 0.08
+  put: -0.08
+  časové_okno_ET: "09:45-14:30"
+  window_days: [0, 0]
+  cieľ:
+  cieľový_dte: 0
+  ponechať_štruktúru: železný_kondor
+  wing_width_strikes: 1
+  long_wings_DTE: 1
+  nepresúvať_cez_víkend: pravda
+  fallback_long_wings_DTE_ak_víkend: 0
+  ekonomika:
+  min_kredit: 0.20
+  min_výnos_percento: 2.5
+  transakčné_náklady_usd: 3
+  obmedzenia:
+  skip_if_earnings_within_days: 0
+  avoid_weeklies: nepravda
+  min_days_between_rolls: 0
+- názov: manažment/len_ochrana
+  spúšťač:
+  DTE: [0, 0]
+  greeks:
+  max_abs_delta_krátkej_nohy: 0.30
+  breach:
+  podklad_dotyk_krátkej_strike: pravda
+  window_days: [0, 0]
+  cieľ:
+  ponechať_štruktúru: železný_kondor
+  cieľový_dte: 1
+  roll_priorita: "roll celej ohrozenej strany na DTE+1 s vycentrovaním delty na 0.08-0.12"
+  ekonomika:
+  min_kredit: 0.05
+  min_zlepšenie_percento: 5
+  obmedzenia:
+  entry_hours_et: "09:45-15:00"
+  min_days_between_rolls: 0
+- názov: expirácia/výstup
+  spúšťač:
+  minutes_to_close_leq: 5
+  window_days: [0, 0]
+  cieľ:
+  ponechať_štruktúru: expirácia
+  auto_close_ITM: pravda
+  auto_close_if_premium_leq: 0.03
+  ekonomika:
+  max_strata_percento_z_marže: 5
+  obmedzenia:
+  force_close_if_assignment_risk: pravda
+  limity_rizika:
+  max_zmluvy_na_podkladový_aktív: 8
+  max_nominálny_aktív: 100000
+  max_util_percento_marže: 20
+  pnl_podlaha_percento_z_marže: -5
+  pnl_strop_percento_z_marže: 5
+  grécke_limity:
+  abs_delta: 30
+  vega: 12
+  theta: -999
+  veľkosť:
+  zmluvy: "floor( min(0.004 * kapitál, 2000) / marža_na_zmluvu )"
+  maximálny_zlomok_kapitálu: 0.015
+  filtre_likvidity:
+  min_otvorený_záujem: 1500
+  min_objem: 500
+  max_ponuka_požadovaného_rozpätia_%: 12
+  zoznam_povolených_exchanges: ["CBOE", "C2", "ISE", "MIAX", "ARCA", "BOX", "PHLX", "GEMX", "MRX", "NOM"]
+  prevedenie:
+  tif: DAY
+  cenový_model: stred
+  limit_offset_bps: 0
+  max_slippage_bps: 60
+  povoliť_čiastočné_vyplnenie: nepravda
+  inteligentné_smerovanie: pravda
+  zábradlia:
+  max_denných_obchodov: 2
+  max_roly_na_podkladový_aktív_za_deň: 2
+  minúty_cooldownu: 20
+  upozornenia:
+    kanály:
+      - e-mail
+      - webhook
+    prahové_hodnoty:
+      missing_liquidity: pravda
+      roll_fail: pravda
+      price_deviation_bps: 100
+    ostražitý:
+      gamma_riziko_minutes_to_close: 20
+      akcia: "preferovať expiráciu OTM; ak ITM ≤5 min do close, zatvoriť manuálne"
+      zákaz_cez_víkend: pravda
+    metadáta:
+      značky: ["0DTE", "QQQ", "iron_condor", "konzervatívny"]
+      poznámky: "Krátke nohy ~5–6 strike úrovní od spot (|Δ|≈0.05–0.10); ochranné nohy DTE+1 ak neprekročí víkend."
+      účinný_od: "2025-10-01"
+      účinný_do: null

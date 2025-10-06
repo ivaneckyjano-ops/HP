@@ -36,3 +36,8 @@ Premenné prostredia:
 Poznámky:
 - Stav služieb sa vyhodnocuje cez token-proxy endpointy. OK = endpoint je dostupný a token má >60s TTL.
 - Reštart služieb vyžaduje, aby webapp bežal v prostredí s prístupom k Dockeru.
+
+Tipy na náhľad/porty:
+- Ak v náhľade vidíš hlášku „Pripájanie k presmerovanému portu…“, skús stránku obnoviť (Ctrl/Cmd+R) alebo otvor port 5000 v externom prehliadači (panel Porty → 5000 → Open in Browser).
+- Alternatívne priamo navštív http://localhost:5000 vo svojom prehliadači.
+- Pre token proxy môžeš overiť JSON na http://localhost:8080/token (DEMO) alebo http://localhost:8081/token (LIVE).
