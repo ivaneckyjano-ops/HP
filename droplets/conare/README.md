@@ -2,6 +2,70 @@
 
 Prehľad a inštrukcie pre nasadenie služieb na droplet "conare".
 
+## Štruktúra
+
+```
+droplets/conare/
+├── README.md              # Tento súbor
+├── Testovanie/            # Hlavná aplikácia (Docker Compose, skripty)
+├── deploy/                # Deployment súbory
+│   ├── deploy.sh         # Hlavný deployment skript
+│   ├── deploy.md         # Dokumentácia deploymentu
+│   ├── token_proxy.py    # Token proxy server
+│   └── *.service         # Systemd unit súbory
+├── var02/                # Staršie súbory (zachované pre kompatibilitu)
+└── config*               # Konfiguračné súbory
+```
+
+## Deployment postup
+
+### 1. Priprava (lokálne)
+```bash
+cd droplets/conare
+# Súbory sú už pripravené v repozitári
+```
+
+### 2. Sync na droplet
+```bash
+# Na lokálnom počítači
+git add .
+git commit -m "Update deployment files"
+git push
+
+# Na droplet-e (ak má naklonovaný repo)
+cd /path/to/repo/droplets/conare
+git pull
+```
+
+### 3. Nasadenie na droplet-e
+```bash
+cd /path/to/repo/droplets/conare/deploy
+sudo ./deploy.sh /opt/saxo
+```
+
+### 4. Overenie
+```bash
+cd /opt/saxo/Testovanie
+docker compose ps
+docker compose logs -f
+```
+
+## Poznámky
+
+- Deployment skript očakáva Docker + Docker Compose na droplet-e
+- Súbory sa kopírujú do `/opt/saxo`
+- Pre produkčné nasadenie použite systemd unit súbory
+- Citlivé údaje (SAXO_CLIENT_ID, SAXO_CLIENT_SECRET) nastavte v `.env` súbore
+
+## Git workflow
+
+1. **Lokálne zmeny:** Uprav súbory v `droplets/conare/`
+2. **Commit:** `git add . && git commit -m "Update"`
+3. **Push:** `git push`
+4. **Na droplet-e:** `git pull && cd deploy && sudo ./deploy.sh`
+
+Tento prístup eliminuje problémy s SCP transfermi a umožňuje verzovanie deployment konfigurácií.
+
 ## Prehľad
 - Účel: Token infra pre Saxo (refresher + HTTP proxy) a voliteľne web UI
 - Prostredia: sim (demo) / live

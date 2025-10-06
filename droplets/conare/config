@@ -1,0 +1,28 @@
+# ------------------------------------------------------------------
+# Globálne nastavenia (ak ich potrebujete)
+# ------------------------------------------------------------------
+# Host *
+#     ForwardAgent yes          # povolí forwarding agenta pre všetky hosty
+#     ServerAliveInterval 60   # udržiava spojenie
+#     ServerAliveCountMax 5
+
+# ------------------------------------------------------------------
+# Jednoduchý alias pre priamy prístup na IP (ak chcete použiť namiesto
+# názvu "Conare" rovno IP adresu)
+# ------------------------------------------------------------------
+Host droplet
+    HostName 129.212.192.21
+    User root
+    IdentityFile ~/.ssh/id_rsa
+    IdentitiesOnly yes
+
+# ------------------------------------------------------------------
+# Preferovaný alias – krátky názov **Conare**
+# ------------------------------------------------------------------
+Host Conare
+    HostName 129.212.192.21
+    User root                 # ak používate iný účet, zmeňte
+    IdentityFile ~/.ssh/id_ed25519   # alebo id_rsa, ak chcete RSA
+    IdentitiesOnly yes
+    ForwardAgent yes          # (voliteľné, ak používate ssh‑agent)
+    

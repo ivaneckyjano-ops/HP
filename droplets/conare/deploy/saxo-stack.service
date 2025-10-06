@@ -1,0 +1,16 @@
+[Unit]
+Description=Saxo stack (live-reader + proxies + positions-store + webapp + ingestor)
+After=docker.service network-online.target
+Wants=docker.service network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/saxo
+# Adjust the compose file path if different
+ExecStart=/usr/bin/docker compose -f /opt/saxo/pc/PC/OpenAIGPT/SaxoAPI/Testovanie/docker-compose.yml up -d
+ExecStop=/usr/bin/docker compose -f /opt/saxo/pc/PC/OpenAIGPT/SaxoAPI/Testovanie/docker-compose.yml down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
